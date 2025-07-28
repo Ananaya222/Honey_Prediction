@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BEESAFE | Honey Quality Analysis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --honey-primary: #FF9F1C;
+      --honey-secondary: #FFBF69;
+      --honey-light: #FFF8F0;
+      --honey-dark: #E2711D;
+      --honey-accent: #FFD166;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: #333;
+      position: relative;
+      overflow-x: hidden;
+      min-height: 100vh;
+      background: 
+        linear-gradient(rgba(0, 0, 0, 0.6), 
+        rgba(139, 69, 19, 0.7)),
+        url('https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') center/cover no-repeat;
+    }
+
+    /* Honeycomb background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="honeycomb" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><polygon points="10,1 18,6 18,14 10,19 2,14 2,6" fill="none" stroke="rgba(255,215,0,0.08)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23honeycomb)"/></svg>');
+      background-size: 80px;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Radial gradient overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 215, 0, 0.05) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 70%, rgba(255, 140, 0, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Honey drop animations */
+    .honeydrop {
+      position: absolute;
+      background: linear-gradient(145deg, #ffd700, #ffb347);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      animation: float 6s ease-in-out infinite;
+      opacity: 0.2;
+      z-index: -1;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: rotate(-45deg) translateY(0px) scale(1); }
+      50% { transform: rotate(-45deg) translateY(-20px) scale(1.1); }
+    }
+
+    /* Container styling */
+    .container {
+      background: rgba(255, 255, 255, 0.97);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      position: relative;
+      z-index: 1;
+      border: 2px solid rgba(255, 215, 0, 0.5);
+      max-width: 1200px;
+      margin: 40px auto;
+      overflow: hidden;
+    }
+
+    /* Navigation styling */
+    nav {
+      background: rgba(255, 255, 255, 0.97);
+      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    }
+
+    /* Section styling */
+    .section {
+      background: rgba(255, 255, 255, 0.97);
+      display: none;
+      padding: 20px;
+    }
+
+    .section.active {
+      display: block;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Rest of your existing styles */
+    .hero-gradient {
+      background: linear-gradient(135deg, rgba(255,159,28,0.9) 0%, rgba(226,113,29,0.9) 100%);
+    }
+    .btn-primary {
+      background: var(--honey-primary);
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 159, 28, 0.3);
+    }
+    .btn-primary:hover {
+      background: var(--honey-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 159, 28, 0.4);
+    }
+    .input-field {
+      border: 2px solid #f0e6d8;
+      transition: all 0.3s;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      width: 100%;
+    }
+    .input-field:focus {
+      border-color: var(--honey-primary);
+      box-shadow: 0 0 0 3px rgba(255, 159, 28, 0.2);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .badge-high {
+      background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+      color: white;
+    }
+    .badge-medium {
+      background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+      color: #333;
+    }
+    .badge-low {
+      background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
+      color: white;
+    }
+    .badge-pharma {
+      background: linear-gradient(135deg, #3F51B5 0%, #2196F3 100%);
+      color: white;
+    }
+    .badge-food {
+      background: linear-gradient(135deg, #FF9800 0%, #FFC107 100%);
+      color: white;
+    }
+    .badge-medicine {
+      background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+      color: white;
+    }
+    .quality-meter {
+      height: 12px;
+      border-radius: 6px;
+      background: linear-gradient(to right, #F44336, #FFC107, #4CAF50);
+      position: relative;
+    }
+    .quality-indicator {
+      position: absolute;
+      top: -8px;
+      width: 4px;
+      height: 28px;
+      background: #333;
+      transform: translateX(-50%);
+    }
+    .sugar-chart {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .sugar-bar {
+      height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .sugar-fill {
+      width: 60%;
+      background: var(--honey-primary);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.5s ease;
+    }
+    .sugar-label {
+      margin-top: 8px;
+      font-weight: 500;
+      text-align: center;
+    }
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+    .input-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+    .input-note {
+      font-size: 0.8rem;
+      color: #777;
+      margin-top: 0.25rem;
+    }
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--honey-primary);
+    }
+    .rec-card {
+      transition: all 0.3s ease;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid #f0e6d8;
+    }
+    .rec-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    .use-tag {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .hidden {
+      display: none;
+    }
+    .use-case-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--honey-accent);
+    }
+    .use-case-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .use-case-good {
+      background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+      color: white;
+    }
+    .use-case-caution {
+      background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+      color: #333;
+    }
+    .use-case-bad {
+      background: linear-gradient(135deg, #F44336 0%, #E91E63 100%);
+      color: white;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+        margin: 20px;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Honey drop animations -->
+  <div class="honeydrop" style="width: 100px; height: 80px; top: 10%; left: 10%; animation-delay: 0s;"></div>
+  <div class="honeydrop" style="width: 80px; height: 60px; top: 30%; left: 80%; animation-delay: 1s;"></div>
+  <div class="honeydrop" style="width: 60px; height: 50px; top: 70%; left: 15%; animation-delay: 2s;"></div>
+  <div class="honeydrop" style="width: 90px; height: 70px; top: 80%; left: 70%; animation-delay: 3s;"></div>
+
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20 items-center">
+          <div class="flex items-center">
+            <!-- Logo or title can go here -->
+          </div>
+          
+          <button class="md:hidden text-gray-700">
+            <i class="fas fa-bars text-2xl"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Initial Analysis Section -->
+    <section id="initialAnalysisSection" class="section active py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="p-8 md:p-12 rounded-xl">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Initial Honey Analysis</h2>
+          
+          <form id="initialHoneyForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Column 1 -->
+              <div class="space-y-6">
+                <!-- 1. Honey Type -->
+                <div class="input-group">
+                  <label class="input-label">Honey Type</label>
+                  <select name="honey_type" class="input-field" required>
+                    <option value="" disabled selected>Select honey type</option>
+                    <option value="Acacia">Acacia</option>
+                    <option value="Wildflower">Wildflower</option>
+                    <option value="Clover">Clover</option>
+                    <option value="Buckwheat">Buckwheat</option>
+                    <option value="Eucalyptus">Eucalyptus</option>
+                    <option value="Heather">Heather</option>
+                    <option value="Manuka">Manuka</option>
+                  </select>
+                </div>
+                
+                <!-- 2. Color -->
+                <div class="input-group">
+                  <label class="input-label">Color</label>
+                  <select name="color" class="input-field" required>
+                    <option value="Extra Light Amber">Extra Light Amber</option>
+                    <option value="Light Amber">Light Amber</option>
+                    <option value="Amber">Amber</option>
+                    <option value="Dark Amber">Dark Amber</option>
+                  </select>
+                </div>
+                
+                <!-- 3. Moisture Content -->
+                <div class="input-group">
+                  <label class="input-label">Moisture Content (%)</label>
+                  <input type="number" step="0.01" name="moisture" class="input-field" placeholder="e.g., 17.5" min="0" max="25" required>
+                  <span class="input-note">Ideal range: 15.05-24.99%</span>
+                </div>
+                
+                <!-- 4. pH Level -->
+                <div class="input-group">
+                  <label class="input-label">pH Level</label>
+                  <input type="number" step="0.01" name="ph" class="input-field" placeholder="e.g., 3.9" min="2" max="6" required>
+                  <span class="input-note">Typical range: 3.4-5.5</span>
+                </div>
+                
+                <!-- 5. Hydrogen Peroxide -->
+                <div class="input-group">
+                  <label class="input-label">Hydrogen Peroxide (mg/kg)</label>
+                  <input type="number" step="0.01" name="hydrogen_peroxide" class="input-field" placeholder="e.g., 1.23" min="0" required>
+                  <span class="input-note">Range:0.10-1.50</span>
+                </div>
+                
+                <!-- 6. MGO Content -->
+                <div class="input-group">
+                  <label class="input-label">Methylglyoxal (MGO) (mg/kg)</label>
+                  <input type="number" step="1" name="mgo" class="input-field" placeholder="e.g., 132" min="0" required>
+                  <span class="input-note">Range:50.37-199.95</span>
+                </div>
+              </div>
+              
+              <!-- Column 2 -->
+              <div class="space-y-6">
+                <!-- 7. Total Phenolic Content -->
+                <div class="input-group">
+                  <label class="input-label">Total Phenolic Content (mg GAE/100g)</label>
+                  <input type="number" step="0.01" name="phenolic" class="input-field" placeholder="e.g., 150.2" min="0" required>
+                  <span class="input-note">Range:50.00-199.67</span>
+                </div>
+                
+                <!-- 8. Antioxidant Activity -->
+                <div class="input-group">
+                  <label class="input-label">Antioxidant Activity (μM TE/g)</label>
+                  <input type="number" step="0.01" name="antioxidant_activity" class="input-field" placeholder="e.g., 45.5" min="0" required>
+                  <span class="input-note">Range:10.06-99.96</span>
+                </div>
+                
+                <!-- 9. Inhibition Zone -->
+                <div class="input-group">
+                  <label class="input-label">Inhibition Zone Diameter (mm)</label>
+                  <input type="number" step="0.1" name="inhibition_zone" class="input-field" placeholder="e.g., 12.5" min="0" required>
+                  <span class="input-note">Range:5.00-29.94</span>
+                </div>
+                
+                <!-- 10. Formic Acid -->
+                <div class="input-group">
+                  <label class="input-label">Formic Acid Concentration (mg/kg)</label>
+                  <input type="number" step="0.01" name="formic_acid" class="input-field" placeholder="e.g., 0.34" min="0" required>
+                  <span class="input-note">Range:0.00047-0.499</span>
+                </div>
+                
+                <!-- 11. Acetic Acid -->
+                <div class="input-group">
+                  <label class="input-label">Acetic Acid Concentration (mg/kg)</label>
+                  <input type="number" step="0.01" name="acetic_acid" class="input-field" placeholder="e.g., 0.12" min="0" required>
+                  <span class="input-note">Range:0.00117-0.299</span>
+                </div>
+                
+                <!-- 12. Gluconic Acid -->
+                <div class="input-group">
+                  <label class="input-label">Gluconic Acid Concentration (mg/kg)</label>
+                  <input type="number" step="0.01" name="gluconic_acid" class="input-field" placeholder="e.g., 0.09" min="0" required>
+                  <span class="input-note">Range:0.0024-0.999</span>
+                </div>
+              </div>
+            </div>
+            
+            <button type="submit" class="w-full mt-8 btn-primary px-6 py-4 rounded-full font-bold text-lg">
+              <i class="fas fa-flask mr-2"></i> Analyze Initial Parameters
+            </button>
+          </form>
+
+          <!-- Initial Results Section (Initially Hidden) -->
+          <div id="initialResultsSection" class="hidden mt-12">
+            <div class="result-card">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-700">Initial Parameters Quality</h3>
+                <div id="initialScoreResult" class="text-xl font-bold"></div>
+              </div>
+              
+              <div class="quality-meter my-4">
+                <div id="initialQualityIndicator" class="quality-indicator"></div>
+              </div>
+              
+              <div id="initialDetailsResult" class="text-gray-700 mb-4"></div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div class="font-semibold text-gray-700">Moisture Content</div>
+                  <div id="moistureResult" class="text-gray-600"></div>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-700">pH Level</div>
+                  <div id="phResult" class="text-gray-600"></div>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-700">Antimicrobial Activity</div>
+                  <div id="antimicrobialResult" class="text-gray-600"></div>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-700">Antioxidant Properties</div>
+                  <div id="antioxidantResult" class="text-gray-600"></div>
+                </div>
+              </div>
+              
+              <button id="proceedToSugarAnalysis" class="w-full mt-4 btn-primary px-6 py-3 rounded-full font-bold">
+                <i class="fas fa-arrow-right mr-2"></i> Proceed to Sugar Analysis
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sugar Analysis Section -->
+    <section id="sugarAnalysisSection" class="section py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="p-8 md:p-12 rounded-xl">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Sugar Composition Analysis</h2>
+          
+          <form id="sugarAnalysisForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="space-y-6">
+                <!-- 1. Fructose Content -->
+                <div class="input-group">
+                  <label class="input-label">Fructose Content (%)</label>
+                  <input type="number" step="0.1" name="fructose" class="input-field" placeholder="e.g., 38.5" min="0" max="100" required>
+                  <span class="input-note">Range:20.00-44.94</span>
+                </div>
+                
+                <!-- 2. Glucose Content -->
+                <div class="input-group">
+                  <label class="input-label">Glucose Content (%)</label>
+                  <input type="number" step="0.1" name="glucose" class="input-field" placeholder="e.g., 30.2" min="0" max="100" required>
+                  <span class="input-note">Range:25.01-39.99</span>
+                </div>
+              </div>
+              
+              <div class="space-y-6">
+                <!-- 3. Sucrose Content -->
+                <div class="input-group">
+                  <label class="input-label">Sucrose Content (%)</label>
+                  <input type="number" step="0.1" name="sucrose" class="input-field" placeholder="e.g., 1.5" min="0" max="100" required>
+                  <span class="input-note">Range:1.00-7.99</span>
+                </div>
+                
+                <!-- 4. Other Sugars -->
+                <div class="input-group">
+                  <label class="input-label">Other Sugars Content (%)</label>
+                  <input type="number" step="0.1" name="other_sugars" class="input-field" placeholder="e.g., 3.8" min="0" max="100" required>
+                  <span class="input-note">Range:1.00-4.99</span>
+                </div>
+              </div>
+            </div>
+            
+            <button type="submit" class="w-full mt-8 btn-primary px-6 py-4 rounded-full font-bold text-lg">
+              <i class="fas fa-chart-pie mr-2"></i> Analyze Sugar Composition
+            </button>
+          </form>
+
+          <!-- Sugar Results Section (Initially Hidden) -->
+          <div id="sugarResultsSection" class="hidden mt-12">
+            <div class="result-card">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-700">Sugar Composition Quality</h3>
+                <div id="sugarScoreResult" class="text-xl font-bold"></div>
+              </div>
+              
+              <div class="quality-meter my-4">
+                <div id="sugarQualityIndicator" class="quality-indicator"></div>
+              </div>
+              
+              <div id="sugarDetailsResult" class="text-gray-700 mb-4"></div>
+              
+              <div id="sugarChartResult" class="sugar-chart mb-4"></div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div class="font-semibold text-gray-700">Fructose/Glucose Ratio</div>
+                  <div id="ratioResult" class="text-gray-600"></div>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-700">Sucrose Content</div>
+                  <div id="sucroseResult" class="text-gray-600"></div>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-700">Total Sugars</div>
+                  <div id="totalSugarsResult" class="text-gray-600"></div>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-700">Crystallization Potential</div>
+                  <div id="crystallizationResult" class="text-gray-600"></div>
+                </div>
+              </div>
+              
+              <button id="showFinalResults" class="w-full mt-4 btn-primary px-6 py-3 rounded-full font-bold">
+                <i class="fas fa-medal mr-2"></i> View Final Quality Assessment
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final Results Section -->
+    <section id="finalResultsSection" class="section py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="p-8 md:p-12 rounded-xl">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Final Quality Assessment</h2>
+          
+          <div class="bg-gradient-to-r from-amber-50 to-yellow-50 p-8 rounded-xl mb-8 text-center border border-amber-100">
+            <h4 class="text-xl font-bold mb-4 text-gray-700">Overall Honey Quality</h4>
+            <div id="overallScore" class="text-4xl font-bold mb-4"></div>
+            <div class="quality-meter my-6 mx-auto max-w-md">
+              <div id="qualityIndicator" class="quality-indicator"></div>
+            </div>
+            <div id="overallDescription" class="text-lg text-gray-700 max-w-2xl mx-auto"></div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
+              <h4 class="text-xl font-bold mb-4 text-gray-700 flex items-center">
+                <i class="fas fa-bacterium text-amber-600 mr-2"></i>
+                Initial Parameters
+              </h4>
+              <div id="initialScore" class="text-xl font-bold mb-4"></div>
+              <div id="initialDetails" class="text-gray-600"></div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
+              <h4 class="text-xl font-bold mb-4 text-gray-700 flex items-center">
+                <i class="fas fa-candy-cane text-amber-600 mr-2"></i>
+                Sugar Quality
+              </h4>
+              <div id="sugarScore" class="text-xl font-bold mb-4"></div>
+              <div id="sugarDetails" class="text-gray-600"></div>
+              <div id="sugarChart" class="sugar-chart"></div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-amber-100 shadow-sm">
+              <h4 class="text-xl font-bold mb-4 text-gray-700 flex items-center">
+                <i class="fas fa-medal text-amber-600 mr-2"></i>
+                Final Grade
+              </h4>
+              <div id="finalGrade" class="text-xl font-bold mb-4"></div>
+              <div id="gradeDetails" class="text-gray-600"></div>
+            </div>
+          </div>
+          
+          <!-- Food Wrapping Suitability Section -->
+          <div class="use-case-card mb-8">
+            <h4 class="text-xl font-bold mb-6 text-gray-700 flex items-center">
+              <i class="fas fa-utensils text-amber-600 mr-2"></i>
+              Food Wrapping Suitability
+            </h4>
+            <div id="useCaseResult" class="mb-4"></div>
+            <div id="useCaseDetails" class="text-gray-700"></div>
+          </div>
+          
+          <div class="bg-white p-8 rounded-xl border-l-4 border-amber-500 mb-8">
+            <h4 class="text-xl font-bold mb-6 text-gray-700 flex items-center">
+              <i class="fas fa-lightbulb text-amber-600 mr-2"></i>
+              Recommendations
+            </h4>
+            <div id="recommendations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+          
+          <div class="flex flex-col sm:flex-row gap-4">
+            <button id="newAnalysisBtn" class="flex-1 btn-primary px-6 py-4 rounded-full font-bold text-lg">
+              <i class="fas fa-redo mr-2"></i> New Analysis
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Analysis Calculation Functions
+    function calculateInitialScore(data) {
+      // Calculate score based on initial parameters (0-100 scale)
+      let score = 0;
+      
+      // Moisture content (ideal: 14-18%)
+      if (data.moisture >= 14 && data.moisture <= 18) {
+        score += 15;
+      } else if (data.moisture > 18 && data.moisture <= 20) {
+        score += 10;
+      } else {
+        score += 5;
+      }
+      
+      // pH level (ideal: 3.4-6.1)
+      if (data.ph >= 3.4 && data.ph <= 6.1) {
+        score += 10;
+      } else {
+        score += 5;
+      }
+      
+      // Hydrogen peroxide (higher is better)
+      score += Math.min(data.hydrogen_peroxide / 2, 10);
+      
+      // MGO content (higher is better, especially for Manuka)
+      if (data.honey_type === "Manuka") {
+        score += Math.min(data.mgo / 10, 15);
+      } else {
+        score += Math.min(data.mgo / 20, 5);
+      }
+      
+      // Phenolic content (higher is better)
+      score += Math.min(data.phenolic / 10, 15);
+      
+      // Antioxidant activity (higher is better)
+      score += Math.min(data.antioxidant_activity / 10, 10);
+      
+      // Inhibition zone (higher is better)
+      score += Math.min(data.inhibition_zone * 2, 15);
+      
+      // Acid content (balanced is better)
+      const totalAcid = data.formic_acid + data.acetic_acid + data.gluconic_acid;
+      if (totalAcid > 100 && totalAcid < 300) {
+        score += 10;
+      } else if (totalAcid >= 300) {
+        score += 5;
+      } else {
+        score += 8;
+      }
+      
+      // Ensure score is between 0-100
+      score = Math.min(Math.max(score, 0), 100);
+      
+      return {
+        score: Math.round(score),
+        quality: score > 80 ? 'High' : score > 50 ? 'Medium' : 'Low',
+        details: getInitialDetails(data)
+      };
+    }
+
+    function calculateSugarQuality(data) {
+      // Calculate sugar quality score (0-100 scale)
+      let score = 0;
+      
+      // Fructose/Glucose ratio (ideal: 1.1-1.3)
+      const ratio = data.fructose / data.glucose;
+      if (ratio > 1.3) {
+        score += 40;
+      } else if (ratio > 1.1) {
+        score += 35;
+      } else if (ratio > 0.9) {
+        score += 25;
+      } else {
+        score += 15;
+      }
+      
+      // Sucrose content (should be <5%)
+      if (data.sucrose < 2) {
+        score += 30;
+      } else if (data.sucrose < 5) {
+        score += 20;
+      } else {
+        score += 5;
+      }
+      
+      // Other sugars (should be <10%)
+      if (data.other_sugars < 5) {
+        score += 20;
+      } else if (data.other_sugars < 10) {
+        score += 10;
+      } else {
+        score += 5;
+      }
+      
+      // Total sugars (should be ~80-90%)
+      const totalSugars = data.fructose + data.glucose + data.sucrose + data.other_sugars;
+      if (totalSugars >= 80 && totalSugars <= 90) {
+        score += 10;
+      } else if (totalSugars > 90) {
+        score += 5;
+      } else {
+        score += 3;
+      }
+      
+      // Ensure score is between 0-100
+      score = Math.min(Math.max(score, 0), 100);
+      
+      return {
+        score: Math.round(score),
+        quality: score > 80 ? 'High' : score > 50 ? 'Medium' : 'Low',
+        details: getSugarDetails(data),
+        composition: {
+          fructose: data.fructose,
+          glucose: data.glucose,
+          sucrose: data.sucrose,
+          other_sugars: data.other_sugars
+        }
+      };
+    }
+
+    function calculateFinalGrade(initialScore, sugarScore) {
+      // Weighted average (70% initial, 30% sugar)
+      const finalScore = Math.round((initialScore * 0.7) + (sugarScore * 0.3));
+      
+      return {
+        score: finalScore,
+        grade: finalScore > 85 ? 'Premium' : 
+               finalScore > 70 ? 'Grade A' : 
+               finalScore > 50 ? 'Grade B' : 'Grade C',
+        description: getFinalDescription(finalScore)
+      };
+    }
+
+    function determineFoodWrappingSuitability(initialData, sugarData, finalScore) {
+      // Criteria for food wrapping suitability
+      const moisture = initialData.moisture;
+      const ph = initialData.ph;
+      const sucrose = sugarData.sucrose;
+      const otherSugars = sugarData.other_sugars;
+      
+      let suitability = '';
+      let details = [];
+      let badgeClass = '';
+      
+      // Premium and Grade A honey is generally good for food wrapping
+      if (finalScore.score > 70) {
+        suitability = 'Excellent for food wrapping';
+        details.push('This honey has excellent antimicrobial properties and stable sugar composition');
+        details.push('Moisture content is within ideal range for long-term storage');
+        details.push('Low sucrose content reduces crystallization risk');
+        badgeClass = 'use-case-good';
+      } 
+      // Grade B honey may need some considerations
+      else if (finalScore.score > 50) {
+        suitability = 'Suitable for food wrapping with precautions';
+        details.push('Consider using in combination with other preservation methods');
+        details.push('Store in cool, dry place to prevent fermentation');
+        if (moisture > 18) {
+          details.push('Higher moisture content may require refrigeration');
+        }
+        badgeClass = 'use-case-caution';
+      }
+      // Grade C honey is not recommended
+      else {
+        suitability = 'Not recommended for food wrapping';
+        details.push('Quality parameters are not optimal for food preservation');
+        details.push('Higher risk of fermentation or crystallization');
+        if (moisture > 18) {
+          details.push('Moisture content is too high for safe food wrapping');
+        }
+        if (sucrose > 5) {
+          details.push('High sucrose content may indicate adulteration');
+        }
+        badgeClass = 'use-case-bad';
+      }
+      
+      // Additional specific warnings
+      if (moisture > 20) {
+        details.push('Warning: Very high moisture content increases fermentation risk');
+        badgeClass = 'use-case-bad';
+        suitability = 'Not recommended - high fermentation risk';
+      }
+      
+      if (ph > 4.5) {
+        details.push('pH level is higher than optimal for antimicrobial activity');
+      }
+      
+      return {
+        suitability: suitability,
+        details: details,
+        badgeClass: badgeClass
+      };
+    }
+
+    function getInitialDetails(data) {
+      let details = [];
+      
+      // Moisture
+      if (data.moisture < 14) {
+        details.push("Moisture content is very low (may indicate over-processing)");
+      } else if (data.moisture <= 18) {
+        details.push("Moisture content is ideal (14-18%)");
+      } else {
+        details.push("Moisture content is higher than ideal (>18%)");
+      }
+      
+      // Antimicrobial
+      if (data.inhibition_zone > 15) {
+        details.push("Excellent antimicrobial activity (inhibition zone >15mm)");
+      } else if (data.inhibition_zone > 10) {
+        details.push("Good antimicrobial activity");
+      } else {
+        details.push("Moderate antimicrobial activity");
+      }
+      
+      // Phenolic
+      if (data.phenolic > 200) {
+        details.push("Very high phenolic content (excellent antioxidant potential)");
+      } else if (data.phenolic > 100) {
+        details.push("Good phenolic content");
+      } else {
+        details.push("Moderate phenolic content");
+      }
+      
+      return details.join(". ") + ".";
+    }
+
+    function getSugarDetails(data) {
+      let details = [];
+      const ratio = data.fructose / data.glucose;
+      
+      // Fructose/Glucose ratio
+      if (ratio > 1.3) {
+        details.push("High fructose/glucose ratio (slow crystallization)");
+      } else if (ratio > 1.1) {
+        details.push("Balanced fructose/glucose ratio");
+      } else {
+        details.push("Higher glucose content (may crystallize faster)");
+      }
+      
+      // Sucrose
+      if (data.sucrose > 5) {
+        details.push("High sucrose content (possible adulteration)");
+      } else if (data.sucrose > 2) {
+        details.push("Moderate sucrose content");
+      } else {
+        details.push("Low sucrose content (typical for pure honey)");
+      }
+      
+      // Other sugars
+      if (data.other_sugars > 10) {
+        details.push("Elevated other sugars content");
+      }
+      
+      return details.join(". ") + ".";
+    }
+
+    function getFinalDescription(score) {
+      if (score > 85) {
+        return "Premium quality honey with excellent characteristics in all parameters. Suitable for therapeutic use and premium markets.";
+      } else if (score > 70) {
+        return "Grade A honey with good quality across all parameters. Excellent for both culinary and medicinal uses.";
+      } else if (score > 50) {
+        return "Grade B honey with acceptable quality. Best for medicinal applications with some health benefits.";
+      } else {
+        return "Grade C honey with basic quality. Needs improvement in production and storage methods.";
+      }
+    }
+
+    function renderSugarChart(composition) {
+      const maxHeight = Math.max(
+        composition.fructose,
+        composition.glucose,
+        composition.sucrose,
+        composition.other_sugars
+      );
+      
+      return `
+        <div class="sugar-bar">
+          <div class="sugar-fill" style="height: ${(composition.fructose / maxHeight) * 100}%;"></div>
+          <div class="sugar-label">Fructose<br>${composition.fructose.toFixed(1)}%</div>
+        </div>
+        <div class="sugar-bar">
+          <div class="sugar-fill" style="height: ${(composition.glucose / maxHeight) * 100}%;"></div>
+          <div class="sugar-label">Glucose<br>${composition.glucose.toFixed(1)}%</div>
+        </div>
+        <div class="sugar-bar">
+          <div class="sugar-fill" style="height: ${(composition.sucrose / maxHeight) * 100}%;"></div>
+          <div class="sugar-label">Sucrose<br>${composition.sucrose.toFixed(1)}%</div>
+        </div>
+        <div class="sugar-bar">
+          <div class="sugar-fill" style="height: ${(composition.other_sugars / maxHeight) * 100}%;"></div>
+          <div class="sugar-label">Other<br>${composition.other_sugars.toFixed(1)}%</div>
+        </div>
+      `;
+    }
+
+    function generateRecommendations(initialData, sugarData, initialScore, sugarScore) {
+      const recommendations = [];
+      const finalScore = calculateFinalGrade(initialScore.score, sugarScore.score).score;
+      
+      // Determine best use based on score and parameters
+      let bestUse = 'food';
+      let bestUseReason = '';
+      
+      // Premium/Grade A recommendations (food and medicine)
+      if (finalScore > 70) {
+        bestUse = 'food';
+        bestUseReason = 'High quality honey suitable for both culinary and medicinal applications';
+        
+        // Food recommendation for Grade A
+        recommendations.push({
+          icon: 'fa-utensils',
+          text: "Excellent for culinary applications with health benefits. Can be used in premium food products.",
+          img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80",
+          use: 'food',
+          useText: 'Food Grade'
+        });
+        
+        // Medicine recommendation for Grade A
+        recommendations.push({
+          icon: 'fa-certificate',
+          text: "Suitable for medicinal applications due to good antimicrobial and antioxidant properties.",
+          img: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80",
+          use: 'medicine',
+          useText: 'Medicinal Use'
+        });
+        
+        // If Manuka, add pharmaceutical recommendation
+        if (initialData.honey_type === "Manuka" && initialData.mgo > 250) {
+          recommendations.push({
+            icon: 'fa-certificate',
+            text: "High MGO content makes this honey ideal for pharmaceutical applications.",
+            img: "https://images.unsplash.com/photo-1581093450021-4a7360e9a6a4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80",
+            use: 'pharmaceutical',
+            useText: 'Pharmaceutical Grade'
+          });
+        }
+      } 
+      // Grade B recommendations (medicine only)
+      else if (finalScore > 50) {
+        bestUse = 'medicine';
+        bestUseReason = 'Good quality honey suitable for medicinal applications';
+        
+        // Medicine recommendation for Grade B
+        recommendations.push({
+          icon: 'fa-certificate',
+          text: "Suitable for medicinal applications due to acceptable antimicrobial properties.",
+          img: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80",
+          use: 'medicine',
+          useText: 'Medicinal Use'
+        });
+        
+        // If moisture is high, add storage recommendation
+        if (initialData.moisture > 18) {
+          recommendations.push({
+            icon: 'fa-tint',
+            text: "Moisture content is slightly high. Improve storage conditions to enhance shelf life for medicinal use.",
+            img: "https://images.stockcake.com/public/f/6/e/f6e55105-6e45-4675-902e-cf3814f671c1_medium/honey-bottling-line-stockcake.jpg",
+            use: 'medicine',
+            useText: 'Storage Improvement'
+          });
+        }
+      }
+      // Grade C recommendations (quality improvement only)
+      else {
+        bestUse = 'improvement';
+        bestUseReason = 'Basic quality honey that needs improvement in production methods';
+        
+        // Quality improvement recommendation
+        recommendations.push({
+          icon: 'fa-exclamation-triangle',
+          text: "Basic quality honey. Needs improvement in production and storage methods for better quality.",
+          img: "https://cdn.shopify.com/s/files/1/0671/9632/2006/files/w5c0con_480x480.jpg?v=1686055988",
+          use: 'food',
+          useText: 'Needs Improvement'
+        });
+        
+        // If sucrose is high, add purity check
+        if (sugarData.sucrose > 5) {
+          recommendations.push({
+            icon: 'fa-candy-cane',
+            text: "High sucrose content detected. Verify honey purity and processing methods.",
+            img: "https://cdn.shopify.com/s/files/1/0671/9632/2006/files/w5c0con_480x480.jpg?v=1686055988",
+            use: 'food',
+            useText: 'Purity Check'
+          });
+        }
+        
+        // If moisture is high, add drying recommendation
+        if (initialData.moisture > 18) {
+          recommendations.push({
+            icon: 'fa-tint',
+            text: "High moisture content detected. Improve drying process to prevent fermentation.",
+            img: "https://images.stockcake.com/public/f/6/e/f6e55105-6e45-4675-902e-cf3814f671c1_medium/honey-bottling-line-stockcake.jpg",
+            use: 'food',
+            useText: 'Processing Improvement'
+          });
+        }
+      }
+      
+      // Best use recommendation
+      recommendations.unshift({
+        icon: 'fa-star',
+        text: `This honey is best suited for ${bestUse === 'food' ? 'culinary' : bestUse === 'medicine' ? 'medicinal' : 'quality improvement'} applications. ${bestUseReason}.`,
+        img: bestUse === 'food' ?
+             "https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" :
+             bestUse === 'medicine' ?
+             "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" :
+             "https://cdn.shopify.com/s/files/1/0671/9632/2006/files/w5c0con_480x480.jpg?v=1686055988",
+        use: bestUse,
+        useText: bestUse === 'food' ? 'Best for Food' : 
+                bestUse === 'medicine' ? 'Best for Medicine' : 'Needs Improvement'
+      });
+      
+      return recommendations;
+    }
+
+    // Navigation between sections
+    function showSection(sectionId) {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(sectionId).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // Event Listeners and UI Handlers
+    document.addEventListener('DOMContentLoaded', function() {
+      // Step 1: Initial Analysis Form Submission
+      document.getElementById("initialHoneyForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        try {
+          const formData = new FormData(e.target);
+          const initialAnalysisData = Object.fromEntries(formData.entries());
+          
+          // Convert numerical values
+          [
+            'moisture', 'ph', 'hydrogen_peroxide', 'mgo',
+            'phenolic', 'antioxidant_activity', 'inhibition_zone',
+            'formic_acid', 'acetic_acid', 'gluconic_acid'
+          ].forEach(field => {
+            initialAnalysisData[field] = parseFloat(initialAnalysisData[field]);
+          });
+          
+          // Store data in localStorage
+          localStorage.setItem('initialAnalysisData', JSON.stringify(initialAnalysisData));
+          
+          // Calculate initial score
+          const initialScore = calculateInitialScore(initialAnalysisData);
+          
+          // Store score in localStorage
+          localStorage.setItem('initialScore', JSON.stringify(initialScore));
+          
+          // Show results section
+          document.getElementById("initialResultsSection").classList.remove("hidden");
+          
+          // Display initial analysis results
+          document.getElementById("initialScoreResult").innerHTML = `
+            <span class="badge ${initialScore.quality === 'High' ? 'badge-high' : 
+                              initialScore.quality === 'Medium' ? 'badge-medium' : 'badge-low'}">
+              ${initialScore.quality} (${initialScore.score}/100)
+            </span>`;
+          
+          // Position quality indicator
+          document.getElementById("initialQualityIndicator").style.left = `${initialScore.score}%`;
+          
+          // Set details
+          document.getElementById("initialDetailsResult").textContent = initialScore.details;
+          
+          // Set specific parameter results
+          document.getElementById("moistureResult").textContent = 
+            `${initialAnalysisData.moisture.toFixed(1)}% - ${initialAnalysisData.moisture < 14 ? 'Very low' : 
+              initialAnalysisData.moisture <= 18 ? 'Ideal' : 'High'}`;
+              
+          document.getElementById("phResult").textContent = 
+            `${initialAnalysisData.ph.toFixed(1)} - ${initialAnalysisData.ph >= 3.4 && 
+              initialAnalysisData.ph <= 6.1 ? 'Normal range' : 'Outside normal range'}`;
+              
+          document.getElementById("antimicrobialResult").textContent = 
+            `Inhibition zone: ${initialAnalysisData.inhibition_zone.toFixed(1)}mm - ${
+              initialAnalysisData.inhibition_zone > 15 ? 'Excellent' : 
+              initialAnalysisData.inhibition_zone > 10 ? 'Good' : 'Moderate'}`;
+              
+          document.getElementById("antioxidantResult").textContent = 
+            `Phenolic: ${initialAnalysisData.phenolic.toFixed(1)} mg GAE/100g - ${
+              initialAnalysisData.phenolic > 200 ? 'Very high' : 
+              initialAnalysisData.phenolic > 100 ? 'Good' : 'Moderate'}`;
+              
+          // Scroll to results
+          document.getElementById("initialResultsSection").scrollIntoView({ behavior: 'smooth' });
+          
+        } catch (error) {
+          alert(`Error: ${error.message}`);
+        }
+      });
+      
+      // Proceed to Sugar Analysis
+      document.getElementById("proceedToSugarAnalysis").addEventListener("click", function() {
+        showSection('sugarAnalysisSection');
+      });
+      
+      // Step 2: Sugar Analysis Form Submission
+      document.getElementById("sugarAnalysisForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        try {
+          const formData = new FormData(e.target);
+          const sugarAnalysisData = Object.fromEntries(formData.entries());
+          
+          // Convert numerical values
+          ['fructose', 'glucose', 'sucrose', 'other_sugars'].forEach(field => {
+            sugarAnalysisData[field] = parseFloat(sugarAnalysisData[field]);
+          });
+          
+          // Store data in localStorage
+          localStorage.setItem('sugarAnalysisData', JSON.stringify(sugarAnalysisData));
+          
+          // Calculate sugar score
+          const sugarScore = calculateSugarQuality(sugarAnalysisData);
+          
+          // Store score in localStorage
+          localStorage.setItem('sugarScore', JSON.stringify(sugarScore));
+          
+          // Show results section
+          document.getElementById("sugarResultsSection").classList.remove("hidden");
+          
+          // Display sugar analysis results
+          document.getElementById("sugarScoreResult").innerHTML = `
+            <span class="badge ${sugarScore.quality === 'High' ? 'badge-high' : 
+                              sugarScore.quality === 'Medium' ? 'badge-medium' : 'badge-low'}">
+              ${sugarScore.quality} (${sugarScore.score}/100)
+            </span>`;
+          
+          // Position quality indicator
+          document.getElementById("sugarQualityIndicator").style.left = `${sugarScore.score}%`;
+          
+          // Set details
+          document.getElementById("sugarDetailsResult").textContent = sugarScore.details;
+          
+          // Set sugar chart
+          document.getElementById("sugarChartResult").innerHTML = renderSugarChart(sugarScore.composition);
+          
+          // Set specific parameter results
+          const ratio = sugarAnalysisData.fructose / sugarAnalysisData.glucose;
+          document.getElementById("ratioResult").textContent = 
+            `${ratio.toFixed(2)} - ${ratio > 1.3 ? 'High (slow crystallization)' : 
+              ratio > 1.1 ? 'Balanced' : 'Higher glucose (faster crystallization)'}`;
+              
+          document.getElementById("sucroseResult").textContent = 
+            `${sugarAnalysisData.sucrose.toFixed(1)}% - ${
+              sugarAnalysisData.sucrose < 2 ? 'Very low (excellent)' : 
+              sugarAnalysisData.sucrose < 5 ? 'Normal' : 'High (possible adulteration)'}`;
+              
+          const totalSugars = sugarAnalysisData.fructose + sugarAnalysisData.glucose + 
+                            sugarAnalysisData.sucrose + sugarAnalysisData.other_sugars;
+          document.getElementById("totalSugarsResult").textContent = 
+            `${totalSugars.toFixed(1)}% - ${
+              totalSugars >= 80 && totalSugars <= 90 ? 'Normal range' : 
+              totalSugars > 90 ? 'High' : 'Low'}`;
+              
+          document.getElementById("crystallizationResult").textContent = 
+            `${ratio > 1.3 ? 'Low (high fructose)' : 
+              ratio > 1.1 ? 'Moderate' : 'High (high glucose)'}`;
+              
+          // Scroll to results
+          document.getElementById("sugarResultsSection").scrollIntoView({ behavior: 'smooth' });
+          
+        } catch (error) {
+          alert(`Error: ${error.message}`);
+        }
+      });
+      
+      // Show Final Results
+      document.getElementById("showFinalResults").addEventListener("click", function() {
+        // Get all data from localStorage
+        const initialAnalysisData = JSON.parse(localStorage.getItem('initialAnalysisData'));
+        const initialScore = JSON.parse(localStorage.getItem('initialScore'));
+        const sugarAnalysisData = JSON.parse(localStorage.getItem('sugarAnalysisData'));
+        const sugarScore = JSON.parse(localStorage.getItem('sugarScore'));
+        
+        // Calculate final grade
+        const finalGrade = calculateFinalGrade(initialScore.score, sugarScore.score);
+        
+        // Determine food wrapping suitability
+        const wrappingSuitability = determineFoodWrappingSuitability(initialAnalysisData, sugarAnalysisData, finalGrade);
+        
+        // Show final results section
+        showSection('finalResultsSection');
+        
+        // Display results
+        // 1. Overall quality
+        document.getElementById("overallScore").innerHTML = `
+          <span class="badge ${finalGrade.grade === 'Premium' ? 'badge-high' : 
+                            finalGrade.grade === 'Grade A' ? 'badge-medium' : 'badge-low'}">
+            ${finalGrade.grade} (${finalGrade.score}/100)
+          </span>`;
+        
+        // Position quality indicator
+        const indicator = document.getElementById("qualityIndicator");
+        indicator.style.left = `${finalGrade.score}%`;
+        
+        document.getElementById("overallDescription").textContent = finalGrade.description;
+        
+        // 2. Initial analysis results
+        document.getElementById("initialScore").innerHTML = `
+          <span class="badge ${initialScore.quality === 'High' ? 'badge-high' : 
+                            initialScore.quality === 'Medium' ? 'badge-medium' : 'badge-low'}">
+            ${initialScore.quality} (${initialScore.score}/100)
+          </span>`;
+        document.getElementById("initialDetails").innerHTML = initialScore.details;
+        
+        // 3. Sugar analysis results
+        document.getElementById("sugarScore").innerHTML = `
+          <span class="badge ${sugarScore.quality === 'High' ? 'badge-high' : 
+                            sugarScore.quality === 'Medium' ? 'badge-medium' : 'badge-low'}">
+            ${sugarScore.quality} (${sugarScore.score}/100)
+          </span>`;
+        document.getElementById("sugarDetails").innerHTML = sugarScore.details;
+        document.getElementById("sugarChart").innerHTML = renderSugarChart(sugarScore.composition);
+        
+        // 4. Final grade
+        document.getElementById("finalGrade").innerHTML = `
+          <span class="badge ${finalGrade.grade === 'Premium' ? 'badge-high' : 
+                            finalGrade.grade === 'Grade A' ? 'badge-medium' : 'badge-low'}">
+            ${finalGrade.grade}
+          </span>`;
+        document.getElementById("gradeDetails").innerHTML = finalGrade.description;
+        
+        // 5. Food wrapping suitability
+        document.getElementById("useCaseResult").innerHTML = `
+          <span class="use-case-badge ${wrappingSuitability.badgeClass}">
+            ${wrappingSuitability.suitability}
+          </span>
+        `;
+        
+        document.getElementById("useCaseDetails").innerHTML = 
+          wrappingSuitability.details.map(detail => 
+            `<p class="mb-2"><i class="fas fa-info-circle text-amber-600 mr-2"></i>${detail}</p>`
+          ).join('');
+        
+        // Generate and display recommendations
+        const recommendations = generateRecommendations(
+          initialAnalysisData, 
+          sugarAnalysisData, 
+          initialScore, 
+          sugarScore
+        );
+        
+        const recommendationsContainer = document.getElementById("recommendations");
+        recommendationsContainer.innerHTML = '';
+        
+        recommendations.forEach(rec => {
+          const div = document.createElement('div');
+          div.className = 'rec-card bg-white rounded-lg overflow-hidden relative';
+          
+          // Determine badge class based on use type
+          let badgeClass = '';
+          if (rec.use === 'pharmaceutical') {
+            badgeClass = 'badge-pharma';
+          } else if (rec.use === 'medicine') {
+            badgeClass = 'badge-medicine';
+          } else {
+            badgeClass = 'badge-food';
+          }
+          
+          div.innerHTML = `
+            <div class="relative">
+              <img src="${rec.img}" alt="Recommendation visual" class="w-full h-48 object-cover">
+              <span class="use-tag ${badgeClass}">${rec.useText}</span>
+            </div>
+            <div class="p-4">
+              <div class="flex items-center mb-2">
+                <i class="fas ${rec.icon} text-amber-600 mr-2"></i>
+                <h5 class="font-bold text-gray-800">Recommendation</h5>
+              </div>
+              <p class="text-gray-600">${rec.text}</p>
+            </div>
+          `;
+          recommendationsContainer.appendChild(div);
+        });
+      });
+      
+      // New Analysis Button
+      document.getElementById("newAnalysisBtn").addEventListener("click", function() {
+        // Clear localStorage
+        localStorage.removeItem('initialAnalysisData');
+        localStorage.removeItem('initialScore');
+        localStorage.removeItem('sugarAnalysisData');
+        localStorage.removeItem('sugarScore');
+        
+        // Reset forms
+        document.getElementById("initialHoneyForm").reset();
+        document.getElementById("sugarAnalysisForm").reset();
+        
+        // Hide results sections
+        document.getElementById("initialResultsSection").classList.add("hidden");
+        document.getElementById("sugarResultsSection").classList.add("hidden");
+        
+        // Show initial analysis section
+        showSection('initialAnalysisSection');
+      });
+    });
+  </script>
+</body>
+</html>
